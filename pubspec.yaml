@@ -1,0 +1,47 @@
+name: thunder_thermal_print
+description: Universal Flutter Thermal Printer Plugin with Bluetooth, BLE, USB, LAN, WiFi, and ESC/POS support.
+version: 1.0.0
+homepage: https://thunderlab.id
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.6
+  rxdart: ^0.27.7
+  image: ^4.1.0
+  pdf: ^3.10.7
+  uuid: ^4.2.1
+  web: ^1.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  mockito: ^5.4.4
+  build_runner: ^2.4.8
+  integration_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: id.thunderlab.thunder_thermal_print
+        pluginClass: ThunderThermalPrintPlugin
+      ios:
+        pluginClass: ThunderThermalPrintPlugin
+      windows:
+        pluginClass: ThunderThermalPrintPluginCApi
+      linux:
+        pluginClass: ThunderThermalPrintPlugin
+      macos:
+        pluginClass: ThunderThermalPrintPlugin
+      web:
+        pluginClass: ThunderThermalPrintWeb
+        fileName: thunder_thermal_print_web.dart

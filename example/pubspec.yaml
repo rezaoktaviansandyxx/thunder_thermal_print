@@ -1,0 +1,25 @@
+name: thunder_thermal_print_example
+description: Example app demonstrating the thunder_thermal_print Flutter plugin.
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  thunder_thermal_print:
+    path: ..
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
