@@ -69,7 +69,8 @@ Add the plugin to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  thunder_thermal_print: ^1.0.0
+  thunder_thermal_print: 
+    git: https://github.com/rezaoktaviansandyxx/thunder_thermal_print.git
 ```
 
 Then run:
