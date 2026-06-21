@@ -121,7 +121,42 @@ abstract class ThunderThermalPrintPlatform {
   // ---------------------------------------------------------------------------
 
   /// Queries the printer for its current hardware status.
-  Future<PrinterStatus> getStatus();
+  Future<Map<String, dynamic>> getStatus();
+
+  /// Returns printer capabilities.
+  Future<Map<String, dynamic>> getPrinterCapabilities();
+
+  /// Returns total printed bytes count.
+  Future<int?> getPrintedBytesCount();
+
+  // ---------------------------------------------------------------------------
+  // Background Service (Android only)
+  // ---------------------------------------------------------------------------
+
+  /// Starts background monitoring service.
+  Future<void> startBackgroundMonitoring();
+
+  /// Stops background monitoring service.
+  Future<void> stopBackgroundMonitoring();
+
+  /// Checks if background monitoring is active.
+  Future<bool> isBackgroundMonitoringActive();
+
+  // ---------------------------------------------------------------------------
+  // Printer Profiles & Persistence
+  // ---------------------------------------------------------------------------
+
+  /// Saves a printer profile for later use.
+  Future<void> savePrinterProfile(PrinterDevice device);
+
+  /// Loads a saved printer profile by id.
+  Future<PrinterDevice?> loadPrinterProfile(String id);
+
+  /// Sets the default printer.
+  Future<void> setDefaultPrinter(PrinterDevice device);
+
+  /// Gets list of paired Bluetooth devices.
+  Future<List<PrinterDevice>> getPairedDevices();
 
   // ---------------------------------------------------------------------------
   // Print Operations

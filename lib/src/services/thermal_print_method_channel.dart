@@ -408,12 +408,88 @@ class MethodChannelThunderThermalPrint extends ThunderThermalPrintPlatform {
   // ---------------------------------------------------------------------------
 
   @override
-  Future<PrinterStatus> getStatus() {
+  Future<Map<String, dynamic>> getStatus() {
     return _guard(() async {
       final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>(
         'getStatus',
       );
-      return PrinterStatus.fromMap(Map<String, dynamic>.from(result ?? {}));
+      return Map<String, dynamic>.from(result ?? {});
+    });
+  }
+
+  @override
+  Future<Map<String, dynamic>> getPrinterCapabilities() {
+    return _guard(() async {
+      final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>(
+        'getPrinterCapabilities',
+      );
+      return Map<String, dynamic>.from(result ?? {});
+    });
+  }
+
+  @override
+  Future<int?> getPrintedBytesCount() {
+    return _guard(() => _methodChannel.invokeMethod<int>('getPrintedBytesCount'));
+  }
+
+  @override
+  Future<void> startBackgroundMonitoring() {
+    return _guard(
+      () => _methodChannel.invokeMethod<void>('startBackgroundMonitoring'),
+    );
+  }
+
+  @override
+  Future<void> stopBackgroundMonitoring() {
+    return _guard(
+      () => _methodChannel.invokeMethod<void>('stopBackgroundMonitoring'),
+    );
+  }
+
+  @override
+  Future<bool> isBackgroundMonitoringActive() {
+    return _guard(
+      () => _methodChannel.invokeMethod<bool>('isBackgroundMonitoringActive').then(
+            (v) => v ?? false,
+          ),
+    );
+  }
+
+  @override
+  Future<void> savePrinterProfile(PrinterDevice device) {
+    return _guard(() => _methodChannel.invokeMethod<void>(
+      'savePrinterProfile',
+      {'device': device.toMap()},
+    ));
+  }
+
+  @override
+  Future<PrinterDevice?> loadPrinterProfile(String id) {
+    return _guard(() async {
+      final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>>(
+        'loadPrinterProfile',
+        {'id': id},
+      );
+      if (result == null) return null;
+      return PrinterDevice.fromMap(Map<String, dynamic>.from(result));
+    });
+  }
+
+  @override
+  Future<void> setDefaultPrinter(PrinterDevice device) {
+    return _guard(() => _methodChannel.invokeMethod<void>(
+      'setDefaultPrinter',
+      {'device': device.toMap()},
+    ));
+  }
+
+  @override
+  Future<List<PrinterDevice>> getPairedDevices() {
+    return _guard(() async {
+      final result = await _methodChannel.invokeMethod<List<dynamic>>(
+        'getPairedDevices',
+      );
+      return _parseDeviceList(result);
     });
   }
 
