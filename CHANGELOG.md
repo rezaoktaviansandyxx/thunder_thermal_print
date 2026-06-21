@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.0
+
+### USB Improvements
+- ✅ **New `requestUsbPermission()` method** – Request USB permission without connecting (early permission prompt)
+- ✅ **Auto-reconnect enabled by default** for USB connections (`autoReconnect` now defaults to `true`)
+- ✅ **Auto-reconnect on sendData** – If the USB printer is turned off and on, `sendData()` will attempt a reconnect before failing
+- ✅ **Improved error reporting** – `connectUsb()` now throws `PermissionException` or `ConnectionException` instead of silent failure
+- ✅ **Fixed connection state EventChannel** – Native connection state events (Map format) are now properly parsed on the Dart side
+- ✅ **USB permission status in scan results** – `PrinterDevice.usbPermissionGranted` shows whether permission is already granted
+
+### Connection Manager
+- ✅ **New `ensureUsbConnected()` method** – Check USB connection and auto-connect if needed
+- ✅ **USB reconnect support in ConnectionManager** – USB devices are now tracked in `_activeConfig` for proper reconnection
+- ✅ **Updated example app defaults** – `autoReconnect: true` now the default for USB
+
 ## 1.0.0 - Initial Release
 
 ### Core Features

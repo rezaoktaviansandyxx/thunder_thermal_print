@@ -184,6 +184,7 @@ class ThunderThermalPrintPlugin : FlutterPlugin, ActivityAware, MethodCallHandle
                 // ---- Permissions ----
                 "requestPermissions" -> handleRequestPermissions(call, result)
                 "checkPermissions" -> handleCheckPermissions(call, result)
+                "requestUsbPermission" -> handleRequestUsbPermission(call, result)
 
                 // ---- Platform ----
                 "getPlatformVersion" -> handleGetPlatformVersion(call, result)
@@ -439,7 +440,16 @@ class ThunderThermalPrintPlugin : FlutterPlugin, ActivityAware, MethodCallHandle
         Thread {
             try {
                 val success = mgr.connect(vendorId, productId, autoReconnect)
-                result.success(success)
+                if (success) {
+                    result.success(true)
+                } else {
+                    val state = mgr.getConnectionState()
+                    if (state == "no_permission") {
+                        result.error("PERMISSION_DENIED", "USB permission not granted. Call requestUsbPermission() first.", null)
+                    } else {
+                        result.error("CONNECT_FAILED", "Failed to connect to USB printer (state=$state)", null)
+                    }
+                }
             } catch (e: Exception) {
                 result.error("CONNECT_ERROR", e.message, null)
             }
@@ -963,6 +973,37 @@ class ThunderThermalPrintPlugin : FlutterPlugin, ActivityAware, MethodCallHandle
             ContextCompat.checkSelfPermission(ctx, it) == PackageManager.PERMISSION_GRANTED
         }
         result.success(resultMap)
+    }
+
+    private fun handleRequestUsbPermission(call: MethodCall, result: Result) {
+        val act = activity
+        if (act == null) {
+            result.error("NO_ACTIVITY", "No activity available for USB permission request", null)
+            return
+        }
+
+        val vendorId = call.argument<Number>("vendorId")?.toInt()
+            ?: run { result.error("INVALID_ARGS", "vendorId is required", null); return }
+        val productId = call.argument<Number>("productId")?.toInt()
+            ?: run { result.error("INVALID_ARGS", "productId is required", null); return }
+
+        val mgr = usbManager ?: run {
+            result.error("NOT_INITIALIZED", "USB manager not initialized", null)
+            return
+        }
+
+        Thread {
+            try {
+                val granted = mgr.requestPermissionOnly(vendorId, productId)
+                if (granted) {
+                    result.success(true)
+                } else {
+                    result.error("PERMISSION_DENIED", "USB permission denied by user", null)
+                }
+            } catch (e: Exception) {
+                result.error("PERMISSION_ERROR", e.message, null)
+            }
+        }.start()
     }
 
     private fun getRequiredPermissions(): List<String> {

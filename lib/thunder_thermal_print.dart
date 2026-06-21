@@ -325,7 +325,7 @@ class ThunderThermalPrint {
   ///
   /// [profile] – Optional [PrinterProfile].
   /// [autoReconnect] – Reconnect when the USB device is detached
-  /// and reattached.
+  /// and reattached. Defaults to `true`.
   /// [timeout] – Connection timeout.
   ///
   /// Throws [PermissionException] if USB host permission is missing.
@@ -344,7 +344,7 @@ class ThunderThermalPrint {
     required int vendorId,
     required int productId,
     PrinterProfile? profile,
-    bool autoReconnect = false,
+    bool autoReconnect = true,
     Duration? timeout,
   }) {
     return ThunderThermalPrintPlatform.instance.connectUsb(
@@ -411,6 +411,40 @@ class ThunderThermalPrint {
   /// ```
   static Future<void> disconnect() {
     return ThunderThermalPrintPlatform.instance.disconnect();
+  }
+
+  /// Ensures a USB printer is connected before printing.
+  ///
+  /// If the USB printer is already connected, this is a no-op.
+  /// If not connected but [vendorId] and [productId] are provided, it
+  /// attempts to connect first (which may trigger the USB permission dialog
+  /// if permission hasn't been granted yet).
+  ///
+  /// Returns `true` if connected after the call completes.
+  ///
+  /// Example:
+  /// ```dart
+  /// if (await ThunderThermalPrint.ensureUsbConnected(
+  ///   vendorId: 0x04B8,
+  ///   productId: 0x0E03,
+  /// )) {
+  ///   await ThunderThermalPrint.printText('Ready to print!');
+  /// }
+  /// ```
+  static Future<bool> ensureUsbConnected({
+    required int vendorId,
+    required int productId,
+    PrinterProfile? profile,
+    bool autoReconnect = true,
+    Duration? timeout,
+  }) {
+    return ConnectionManager.ensureUsbConnected(
+      vendorId: vendorId,
+      productId: productId,
+      profile: profile,
+      autoReconnect: autoReconnect,
+      timeout: timeout,
+    );
   }
 
   /// Returns `true` if a printer is currently connected and ready to accept
@@ -740,7 +774,6 @@ class ThunderThermalPrint {
   /// - `BLUETOOTH_SCAN` / `BLUETOOTH_CONNECT` (Android 12+)
   /// - `BLUETOOTH` / `ACCESS_FINE_LOCATION` (Android 11 and below)
   /// - `ACCESS_COARSE_LOCATION`
-  /// - USB host permission (if a USB device is attached)
   ///
   /// On iOS, this triggers the Bluetooth and/or local network permission
   /// dialogs if they haven't been shown yet.
@@ -758,6 +791,54 @@ class ThunderThermalPrint {
   /// ```
   static Future<bool> requestPermissions() {
     return ThunderThermalPrintPlatform.instance.requestPermissions();
+  }
+
+  /// Requests USB device permission for a specific USB printer.
+  ///
+  /// On Android, USB host permission must be granted by the user before
+  /// the app can communicate with a USB device. Unlike [connectUsb], this
+  /// method only shows the permission dialog **without** opening the USB
+  /// connection – call it early (e.g., right after scanning) so the user
+  /// can grant permission before any print operation.
+  ///
+  /// Once granted, Android remembers the permission, so subsequent calls
+  /// to [connectUsb] with the same VID/PID will skip the dialog.
+  ///
+  /// [vendorId] – The USB vendor ID of the target printer.
+  /// [productId] – The USB product ID of the target printer.
+  ///
+  /// Returns `true` if permission was granted, `false` if denied.
+  ///
+  /// Throws [PermissionException] if the permission dialog fails to show
+  /// (e.g., no Activity context available).
+  ///
+  /// Example:
+  /// ```dart
+  /// // Scan USB printers first
+  /// final devices = await ThunderThermalPrint.scanUsb();
+  /// if (devices.isNotEmpty) {
+  ///   final device = devices.first;
+  ///   // Pre-request permission before connecting
+  ///   final granted = await ThunderThermalPrint.requestUsbPermission(
+  ///     vendorId: device.vendorId!,
+  ///     productId: device.productId!,
+  ///   );
+  ///   if (granted) {
+  ///     await ThunderThermalPrint.connectUsb(
+  ///       vendorId: device.vendorId!,
+  ///       productId: device.productId!,
+  ///     );
+  ///   }
+  /// }
+  /// ```
+  static Future<bool> requestUsbPermission({
+    required int vendorId,
+    required int productId,
+  }) {
+    return ThunderThermalPrintPlatform.instance.requestUsbPermission(
+      vendorId: vendorId,
+      productId: productId,
+    );
   }
 
   /// Checks whether all required printer permissions are currently granted.

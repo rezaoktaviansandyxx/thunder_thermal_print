@@ -370,7 +370,7 @@ class ThunderThermalPrintWeb extends ThunderThermalPrintPlatform {
     required int vendorId,
     required int productId,
     PrinterProfile? profile,
-    bool autoReconnect = false,
+    bool autoReconnect = true,
     Duration? timeout,
   }) async {
     if (!_isWebUSBAvailable) {
@@ -686,6 +686,17 @@ class ThunderThermalPrintWeb extends ThunderThermalPrintPlatform {
   // -------------------------------------------------------------------------
   @override
   Future<bool> requestPermissions() async {
+    return true;
+  }
+
+  @override
+  Future<bool> requestUsbPermission({
+    required int vendorId,
+    required int productId,
+  }) async {
+    // On web, USB permission is granted by the browser when the user
+    // selects a device (via requestDevice). There is no pre-emptive
+    // permission request needed.
     return true;
   }
 

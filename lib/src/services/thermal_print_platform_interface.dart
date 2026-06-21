@@ -93,11 +93,15 @@ abstract class ThunderThermalPrintPlatform {
   });
 
   /// Connects to a USB printer identified by [vendorId] and [productId].
+  ///
+  /// [autoReconnect] defaults to `true` on Android – when the USB device is
+  /// detached and re-attached the plugin will automatically re-establish the
+  /// connection.
   Future<void> connectUsb({
     required int vendorId,
     required int productId,
     PrinterProfile? profile,
-    bool autoReconnect = false,
+    bool autoReconnect = true,
     Duration? timeout,
   });
 
@@ -208,6 +212,19 @@ abstract class ThunderThermalPrintPlatform {
   ///
   /// Returns `true` if all required permissions were granted.
   Future<bool> requestPermissions();
+
+  /// Requests USB device permission for a specific USB printer.
+  ///
+  /// Unlike [connectUsb], this only requests the Android USB permission
+  /// dialog without actually opening the connection. Call this early in
+  /// your app flow (e.g., after scanning) so the user can grant permission
+  /// before any print operation.
+  ///
+  /// Returns `true` if permission was granted.
+  Future<bool> requestUsbPermission({
+    required int vendorId,
+    required int productId,
+  });
 
   /// Checks whether all required permissions are currently granted.
   Future<bool> checkPermissions();

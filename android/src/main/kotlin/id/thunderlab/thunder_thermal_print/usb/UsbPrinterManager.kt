@@ -168,18 +168,19 @@ class UsbPrinterManager(
 
         try {
             val deviceList = manager.deviceList
-            return deviceList.values.map { device ->
-                mapOf(
-                    "name" to (device.deviceName ?: "Unknown USB"),
-                    "vendorId" to device.vendorId,
-                    "productId" to device.productId,
-                    "deviceId" to device.deviceId,
-                    "interfaceCount" to device.interfaceCount,
-                    "isPrinter" to isLikelyPrinter(device),
-                    "vendorIdHex" to String.format("0x%04X", device.vendorId),
-                    "productIdHex" to String.format("0x%04X", device.productId)
-                )
-            }.sortedByDescending { it["isPrinter"] as? Boolean }
+        return deviceList.values.map { device ->
+            mapOf(
+                "name" to (device.deviceName ?: "Unknown USB"),
+                "vendorId" to device.vendorId,
+                "productId" to device.productId,
+                "deviceId" to device.deviceId,
+                "interfaceCount" to device.interfaceCount,
+                "isPrinter" to isLikelyPrinter(device),
+                "vendorIdHex" to String.format("0x%04X", device.vendorId),
+                "productIdHex" to String.format("0x%04X", device.productId),
+                "hasPermission" to (manager?.hasPermission(device) ?: false)
+            )
+        }.sortedByDescending { it["isPrinter"] as? Boolean }
         } catch (e: Exception) {
             Log.e(TAG, "Error scanning USB devices", e)
             return emptyList()
@@ -276,6 +277,58 @@ class UsbPrinterManager(
 
         setConnectionState(STATE_NO_PERMISSION)
 
+        val granted = requestPermissionInternal(device, manager)
+
+        if (granted) {
+            Log.d(TAG, "USB permission granted, establishing connection")
+            return establishConnection(device, manager)
+        } else {
+            Log.e(TAG, "USB permission denied")
+            setConnectionState(STATE_NO_PERMISSION)
+            return false
+        }
+    }
+
+    /**
+     * Request USB permission only (without connecting).
+     * @param vendorId Target USB vendor ID
+     * @param productId Target USB product ID
+     * @return true if permission was granted
+     */
+    fun requestPermissionOnly(vendorId: Int, productId: Int): Boolean {
+        val manager = usbManager
+        if (manager == null) {
+            Log.e(TAG, "USB manager not available")
+            return false
+        }
+
+        val device = manager.deviceList.values.find {
+            it.vendorId == vendorId && it.productId == productId
+        }
+
+        if (device == null) {
+            Log.e(TAG, "USB device not found: vendor=0x${vendorId.toString(16)}, product=0x${productId.toString(16)}")
+            return false
+        }
+
+        if (manager.hasPermission(device)) {
+            Log.d(TAG, "USB permission already granted for ${device.deviceName}")
+            return true
+        }
+
+        return requestPermissionInternal(device, manager)
+    }
+
+    /**
+     * Internal permission request without connection logic.
+     */
+    private fun requestPermissionInternal(device: UsbDevice, manager: UsbManager): Boolean {
+        val act = activity
+        if (act == null) {
+            Log.e(TAG, "No activity for USB permission request")
+            return false
+        }
+
         permissionRequestCode++
         val requestCode = permissionRequestCode
 
@@ -307,14 +360,7 @@ class UsbPrinterManager(
             pendingResult.await(30, java.util.concurrent.TimeUnit.SECONDS)
         } catch (_: InterruptedException) {}
 
-        if (granted) {
-            Log.d(TAG, "USB permission granted, establishing connection")
-            return establishConnection(device, manager)
-        } else {
-            Log.e(TAG, "USB permission denied")
-            setConnectionState(STATE_NO_PERMISSION)
-            return false
-        }
+        return granted
     }
 
     /**
@@ -504,6 +550,21 @@ class UsbPrinterManager(
      * @return true if all data was sent successfully
      */
     fun sendData(data: ByteArray): Boolean {
+        // If not connected but auto-reconnect is enabled, attempt a quick reconnect
+        if (!isConnectedFlag.get()) {
+            if (autoReconnectEnabled && targetVendorId != -1 && targetProductId != -1) {
+                Log.d(TAG, "Connection lost, attempting reconnect before sendData")
+                val reconnected = connect(targetVendorId, targetProductId, true)
+                if (!reconnected) {
+                    Log.e(TAG, "Reconnect failed, cannot send USB data")
+                    return false
+                }
+            } else {
+                Log.e(TAG, "Not connected, cannot send USB data")
+                return false
+            }
+        }
+
         val connection = usbConnection
         val endpoint = bulkOutEndpoint
         if (connection == null || endpoint == null || !isConnectedFlag.get()) {

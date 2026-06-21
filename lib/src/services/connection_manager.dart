@@ -104,7 +104,7 @@ class ConnectionManager {
     required int vendorId,
     required int productId,
     PrinterProfile? profile,
-    bool autoReconnect = false,
+    bool autoReconnect = true,
     Duration? timeout,
   }) async {
     try {
@@ -127,10 +127,49 @@ class ConnectionManager {
 
       _setState(PrinterConnectionState.connected);
       _emitEvent(PrinterEventType.printerConnected);
+
+      if (autoReconnect) {
+        _activeConfig = ConnectionConfig(
+          identifier: 'usb:$vendorId:$productId',
+          autoReconnect: true,
+          profile: profile?.name ?? 'custom',
+        );
+      }
     } catch (e) {
       _setState(PrinterConnectionState.disconnected);
       _currentDevice = null;
       rethrow;
+    }
+  }
+
+  /// Ensures a USB printer is connected before printing.
+  ///
+  /// If the printer is already connected, this is a no-op.
+  /// If not connected but [vendorId] and [productId] are provided, it
+  /// attempts to connect first. Returns `true` if connected after the call.
+  static Future<bool> ensureUsbConnected({
+    required int vendorId,
+    required int productId,
+    PrinterProfile? profile,
+    bool autoReconnect = false,
+    Duration? timeout,
+  }) async {
+    if (isConnected && _currentDevice?.vendorId == vendorId &&
+        _currentDevice?.productId == productId) {
+      return true;
+    }
+
+    try {
+      await connectUsb(
+        vendorId: vendorId,
+        productId: productId,
+        profile: profile,
+        autoReconnect: autoReconnect,
+        timeout: timeout,
+      );
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 
@@ -233,6 +272,16 @@ class ConnectionManager {
             autoReconnect: config.autoReconnect,
             timeout: config.timeout,
           );
+        } else if (config.identifier.startsWith('usb:')) {
+          final parts = config.identifier.replaceFirst('usb:', '').split(':');
+          if (parts.length == 2) {
+            await connectUsb(
+              vendorId: int.tryParse(parts[0]) ?? 0,
+              productId: int.tryParse(parts[1]) ?? 0,
+              autoReconnect: config.autoReconnect,
+              timeout: config.timeout,
+            );
+          }
         } else {
           await connectBluetooth(
             macAddress: config.identifier,

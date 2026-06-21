@@ -59,15 +59,24 @@ class MethodChannelThunderThermalPrint extends ThunderThermalPrintPlatform {
     _connectionStateSubscription =
         _connectionStateChannel.receiveBroadcastStream().listen(
       (dynamic event) {
+        // Native side sends a Map: {transportType, state, timestamp}
+        // Parse the state string from the map.
+        String stateStr;
+        if (event is Map) {
+          stateStr = (event)['state'] as String? ?? 'disconnected';
+        } else if (event is String) {
+          stateStr = event;
+        } else {
+          stateStr = 'disconnected';
+        }
+
         final state = PrinterConnectionState.values.firstWhere(
-          (e) => e.name == event,
+          (e) => e.name == stateStr,
           orElse: () => PrinterConnectionState.disconnected,
         );
         ConnectionStream().emit(state);
       },
       onError: (Object error) {
-        // Silently close the connection stream on channel error – the
-        // native side likely tore down the event sink.
         if (error is PlatformException) {
           debugPrint(
             '[ThermalPrint] connection_state EventChannel error: '
@@ -350,7 +359,7 @@ class MethodChannelThunderThermalPrint extends ThunderThermalPrintPlatform {
     required int vendorId,
     required int productId,
     PrinterProfile? profile,
-    bool autoReconnect = false,
+    bool autoReconnect = true,
     Duration? timeout,
   }) {
     _ensureEventChannelsInitialized();
@@ -583,6 +592,19 @@ class MethodChannelThunderThermalPrint extends ThunderThermalPrintPlatform {
       () => _methodChannel.invokeMethod<bool>('requestPermissions').then(
             (v) => v ?? false,
           ),
+    );
+  }
+
+  @override
+  Future<bool> requestUsbPermission({
+    required int vendorId,
+    required int productId,
+  }) {
+    return _guard(
+      () => _methodChannel.invokeMethod<bool>(
+        'requestUsbPermission',
+        {'vendorId': vendorId, 'productId': productId},
+      ).then((v) => v ?? false),
     );
   }
 

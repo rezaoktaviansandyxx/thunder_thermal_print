@@ -32,7 +32,10 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  thunder_thermal_print: ^1.0.0
+  thunder_thermal_print:
+    git:
+      url: https://github.com/rezaoktaviansandyxx/thunder_thermal_print.git
+      ref: develop
 ```
 
 ## Quick Start
@@ -219,12 +222,34 @@ await ThunderThermalPrint.connectBle(
   profile: PrinterProfile.sunmi,
 );
 
-// USB
+// USB (auto-reconnect is enabled by default for USB)
 await ThunderThermalPrint.connectUsb(
   vendorId: 0x04B8,
   productId: 0x0E03,
   profile: PrinterProfile.epson,
+  autoReconnect: true, // default is true
 );
+
+// USB permission check from scan results
+final usbDevices = await ThunderThermalPrint.scanUsb();
+for (final device in usbDevices) {
+  if (device.usbPermissionGranted == false) {
+    // Request permission before connecting
+    await ThunderThermalPrint.requestUsbPermission(
+      vendorId: device.vendorId!,
+      productId: device.productId!,
+    );
+  }
+}
+
+// Ensure USB is connected before printing (auto-connect if needed)
+final connected = await ThunderThermalPrint.ensureUsbConnected(
+  vendorId: 0x04B8,
+  productId: 0x0E03,
+);
+if (connected) {
+  await ThunderThermalPrint.printText('Printer is ready!');
+}
 
 // Network
 await ThunderThermalPrint.connectNetwork(
@@ -334,11 +359,19 @@ final customProfile = PrinterProfile.custom(
 ### Permissions
 
 ```dart
-// Request all required permissions
+// Request all required permissions (Bluetooth, Location)
 final granted = await ThunderThermalPrint.requestPermissions();
 
 // Check current permissions
 final hasPermission = await ThunderThermalPrint.checkPermissions();
+
+// Request USB permission for a specific device (without connecting)
+// Call this early after scanning so the user can grant permission
+// before any print operation.
+final usbGranted = await ThunderThermalPrint.requestUsbPermission(
+  vendorId: 0x04B8,
+  productId: 0x0E03,
+);
 ```
 
 ### ESC/POS Commands
@@ -436,10 +469,26 @@ try {
 - Check if the printer supports BLE
 - Restart the printer and try again
 
+### USB not printing after printer power cycle
+- Ensure `autoReconnect: true` when calling `connectUsb()` (now the default)
+- The plugin will automatically re-establish the USB connection when the printer is turned back on
+- If printing still fails, call `ensureUsbConnected()` before printing:
+  ```dart
+  if (!await ThunderThermalPrint.ensureUsbConnected(
+    vendorId: device.vendorId!,
+    productId: device.productId!,
+  )) {
+    // Show error to user
+  }
+  ```
+
+### USB permission popup on fresh install
+- On first install, Android shows a system dialog to grant USB permission
+- Use `requestUsbPermission(vendorId, productId)` to trigger this dialog early
+- Once granted, Android remembers the permission for future app launches
+- Check `PrinterDevice.usbPermissionGranted` from scan results to know the status
+
 ### USB not detected on Linux
-- Add user to `dialout` group: `sudo usermod -a -G dialout $USER`
-- Log out and log back in for changes to take effect
-- Check if `libusb` is installed
 
 ### Network printer not found
 - Verify the printer IP address is correct
@@ -462,8 +511,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- [GitHub Issues](https://github.com/thunderlabs/thunder_thermal_print/issues)
-- [Pub.dev](https://pub.dev/packages/thunder_thermal_print)
+<!-- - [GitHub Issues](https://github.com/thunderlabs/thunder_thermal_print/issues)
+- [Pub.dev](https://pub.dev/packages/thunder_thermal_print) -->
 - [Example App](example/)
 
 ## Changelog

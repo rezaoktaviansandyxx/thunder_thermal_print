@@ -38,6 +38,16 @@ class UsbHandler {
     );
   }
 
+  static Future<bool> requestPermission({
+    required int vendorId,
+    required int productId,
+  }) async {
+    return ThunderThermalPrintPlatform.instance.requestUsbPermission(
+      vendorId: vendorId,
+      productId: productId,
+    );
+  }
+
   static Future<bool> isSupported() async {
     return ThunderThermalPrintPlatform.instance.isFeatureSupported('usb');
   }

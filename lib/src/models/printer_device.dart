@@ -24,6 +24,10 @@ class PrinterDevice {
   /// Whether the device is currently connected
   final bool isConnected;
 
+  /// Whether USB host permission has been granted for this device.
+  /// Only meaningful for USB devices on Android. `null` for other types.
+  final bool? usbPermissionGranted;
+
   /// Additional device metadata
   final Map<String, dynamic> metadata;
 
@@ -36,6 +40,7 @@ class PrinterDevice {
     this.vendorId,
     this.productId,
     this.isConnected = false,
+    this.usbPermissionGranted,
     this.metadata = const {},
   });
 
@@ -51,6 +56,7 @@ class PrinterDevice {
       vendorId: map['vendorId'] as int?,
       productId: map['productId'] as int?,
       isConnected: map['isConnected'] as bool? ?? false,
+      usbPermissionGranted: map['hasPermission'] as bool?,
       metadata: Map<String, dynamic>.from(map['metadata'] as Map? ?? {}),
     );
   }
@@ -65,11 +71,13 @@ class PrinterDevice {
     int? vendorId,
     int? productId,
     bool? isConnected,
+    bool? usbPermissionGranted,
     Map<String, dynamic>? metadata,
     bool clearPort = false,
     bool clearRssi = false,
     bool clearVendorId = false,
     bool clearProductId = false,
+    bool clearUsbPermissionGranted = false,
   }) {
     return PrinterDevice(
       address: address ?? this.address,
@@ -80,6 +88,9 @@ class PrinterDevice {
       vendorId: clearVendorId ? null : (vendorId ?? this.vendorId),
       productId: clearProductId ? null : (productId ?? this.productId),
       isConnected: isConnected ?? this.isConnected,
+      usbPermissionGranted: clearUsbPermissionGranted
+          ? null
+          : (usbPermissionGranted ?? this.usbPermissionGranted),
       metadata: metadata ?? this.metadata,
     );
   }
@@ -94,6 +105,7 @@ class PrinterDevice {
       'vendorId': vendorId,
       'productId': productId,
       'isConnected': isConnected,
+      'hasPermission': usbPermissionGranted,
       'metadata': metadata,
     };
   }
@@ -110,7 +122,8 @@ class PrinterDevice {
           rssi == other.rssi &&
           vendorId == other.vendorId &&
           productId == other.productId &&
-          isConnected == other.isConnected;
+          isConnected == other.isConnected &&
+          usbPermissionGranted == other.usbPermissionGranted;
 
   @override
   int get hashCode => Object.hash(
@@ -122,6 +135,7 @@ class PrinterDevice {
         vendorId,
         productId,
         isConnected,
+        usbPermissionGranted,
       );
 
   @override
