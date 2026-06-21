@@ -27,6 +27,9 @@ class PrinterStatus {
   /// Human-readable error message
   final String? errorMessage;
 
+  /// Timestamp of when this status was retrieved
+  final DateTime? timestamp;
+
   const PrinterStatus({
     this.online = false,
     this.paperOut = false,
@@ -37,6 +40,7 @@ class PrinterStatus {
     this.batteryLevel,
     this.errorCode,
     this.errorMessage,
+    this.timestamp,
   });
 
   factory PrinterStatus.fromMap(Map<String, dynamic> map) {
@@ -50,6 +54,9 @@ class PrinterStatus {
       batteryLevel: map['batteryLevel'] as int?,
       errorCode: map['errorCode'] as int?,
       errorMessage: map['errorMessage'] as String?,
+      timestamp: map['timestamp'] != null
+          ? DateTime.parse(map['timestamp'] as String)
+          : null,
     );
   }
 
@@ -64,9 +71,11 @@ class PrinterStatus {
     int? batteryLevel,
     int? errorCode,
     String? errorMessage,
+    DateTime? timestamp,
     bool clearErrorCode = false,
     bool clearErrorMessage = false,
     bool clearBatteryLevel = false,
+    bool clearTimestamp = false,
   }) {
     return PrinterStatus(
       online: online ?? this.online,
@@ -78,6 +87,7 @@ class PrinterStatus {
       batteryLevel: clearBatteryLevel ? null : (batteryLevel ?? this.batteryLevel),
       errorCode: clearErrorCode ? null : (errorCode ?? this.errorCode),
       errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+      timestamp: clearTimestamp ? null : (timestamp ?? this.timestamp),
     );
   }
 
@@ -92,6 +102,7 @@ class PrinterStatus {
       'batteryLevel': batteryLevel,
       'errorCode': errorCode,
       'errorMessage': errorMessage,
+      'timestamp': timestamp?.toIso8601String(),
     };
   }
 
@@ -113,7 +124,8 @@ class PrinterStatus {
   String toString() =>
       'PrinterStatus(online: $online, paperOut: $paperOut, '
       'paperNearEnd: $paperNearEnd, coverOpen: $coverOpen, '
-      'drawerOpen: $drawerOpen, batteryLow: $batteryLow)';
+      'drawerOpen: $drawerOpen, batteryLow: $batteryLow, '
+      'timestamp: $timestamp)';
 
   @override
   bool operator ==(Object other) =>
@@ -126,7 +138,8 @@ class PrinterStatus {
           coverOpen == other.coverOpen &&
           drawerOpen == other.drawerOpen &&
           batteryLow == other.batteryLow &&
-          batteryLevel == other.batteryLevel;
+          batteryLevel == other.batteryLevel &&
+          timestamp == other.timestamp;
 
   @override
   int get hashCode => Object.hash(
@@ -137,5 +150,6 @@ class PrinterStatus {
         drawerOpen,
         batteryLow,
         batteryLevel,
+        timestamp,
       );
 }

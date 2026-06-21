@@ -147,7 +147,7 @@ class _BluetoothExampleScreenState extends State<BluetoothExampleScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _isConnected ? _disconnect : null,
-                    icon: const Icon(Icons.disconnect),
+                    icon: const Icon(Icons.bluetooth_disabled),
                     label: const Text('Disconnect'),
                   ),
                 ),

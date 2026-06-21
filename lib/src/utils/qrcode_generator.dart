@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import '../escpos/escpos_commands.dart';
 
 class QrCodeGenerator {

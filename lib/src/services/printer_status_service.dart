@@ -1,5 +1,4 @@
 import '../models/models.dart';
-import '../exceptions/exceptions.dart';
 import '../services/thermal_print_platform_interface.dart';
 
 class PrinterStatusService {
@@ -37,7 +36,7 @@ class PrinterStatusService {
   }
 
   static Future<double?> getPrinterTemperature() async {
-    final status = await getStatus();
+    await getStatus();
     return null;
   }
 

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import '../models/models.dart';
-import '../exceptions/exceptions.dart';
 import '../receipt/receipt_builder.dart';
 import '../services/thermal_print_platform_interface.dart';
 import '../streams/connection_stream.dart';

@@ -97,42 +97,34 @@ void main() {
       expect(device1.hashCode == device2.hashCode, true);
     });
 
-    test('isBluetooth getter works', () {
+    test('connectionType getter works', () {
       final bt = PrinterDevice(
         address: '00:11:22:33:44:55',
         name: 'BT',
         connectionType: PrinterConnectionType.bluetooth,
       );
-      expect(bt.isBluetooth, true);
-      expect(bt.isBle, false);
-      expect(bt.isUsb, false);
-      expect(bt.isNetwork, false);
-    });
+      expect(bt.connectionType, PrinterConnectionType.bluetooth);
 
-    test('isBle getter works', () {
       final ble = PrinterDevice(
         address: 'device-id',
         name: 'BLE',
         connectionType: PrinterConnectionType.ble,
       );
-      expect(ble.isBle, true);
-      expect(ble.isBluetooth, false);
-    });
+      expect(ble.connectionType, PrinterConnectionType.ble);
 
-    test('isNetwork getter works for network and wifi', () {
       final network = PrinterDevice(
         address: '192.168.1.100',
         name: 'Network',
         connectionType: PrinterConnectionType.network,
       );
-      expect(network.isNetwork, true);
+      expect(network.connectionType, PrinterConnectionType.network);
 
       final wifi = PrinterDevice(
         address: '192.168.1.101',
         name: 'WiFi',
         connectionType: PrinterConnectionType.wifi,
       );
-      expect(wifi.isNetwork, true);
+      expect(wifi.connectionType, PrinterConnectionType.wifi);
     });
   });
 

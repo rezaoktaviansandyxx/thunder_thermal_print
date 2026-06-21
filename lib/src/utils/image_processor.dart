@@ -38,10 +38,7 @@ class ImageProcessor {
   }
 
   static img.Image _applyThreshold(img.Image image) {
-    final result = img.Image.from(
-      width: image.width,
-      height: image.height,
-    );
+    final result = img.Image(width: image.width, height: image.height);
 
     for (int y = 0; y < image.height; y++) {
       for (int x = 0; x < image.width; x++) {

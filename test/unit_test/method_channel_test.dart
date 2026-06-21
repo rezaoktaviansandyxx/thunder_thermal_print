@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thunder_thermal_print/src/exceptions/exceptions.dart';
@@ -337,13 +336,12 @@ void main() {
       });
 
       final status = await platform.getStatus();
-      expect(status.online, isTrue);
-      expect(status.paperOut, isFalse);
-      expect(status.batteryLevel, 85);
-      expect(status.canPrint, isTrue);
+      expect(status['online'], isTrue);
+      expect(status['paperOut'], isFalse);
+      expect(status['batteryLevel'], 85);
     });
 
-    test('returns default PrinterStatus for null response', () async {
+    test('returns default status for null response', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
         if (methodCall.method == 'getStatus') return null;
@@ -351,8 +349,7 @@ void main() {
       });
 
       final status = await platform.getStatus();
-      expect(status.online, isFalse);
-      expect(status.canPrint, isFalse);
+      expect(status['online'], isFalse);
     });
 
     test('returns status with error conditions', () async {
@@ -371,11 +368,11 @@ void main() {
       });
 
       final status = await platform.getStatus();
-      expect(status.online, isFalse);
-      expect(status.paperOut, isTrue);
-      expect(status.coverOpen, isTrue);
-      expect(status.errorCode, 100);
-      expect(status.errorMessage, 'Hardware failure');
+      expect(status['online'], isFalse);
+      expect(status['paperOut'], isTrue);
+      expect(status['coverOpen'], isTrue);
+      expect(status['errorCode'], 100);
+      expect(status['errorMessage'], 'Hardware failure');
     });
   });
 

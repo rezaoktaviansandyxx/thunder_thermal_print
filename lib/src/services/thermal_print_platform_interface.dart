@@ -225,4 +225,7 @@ abstract class ThunderThermalPrintPlatform {
   /// `'network'`, `'qrCode'`, `'barcode'`, `'image'`, `'pdf'`,
   /// `'cashDrawer'`.
   Future<bool> isFeatureSupported(String feature);
+
+  /// Releases platform resources (event channels, background services, etc.).
+  Future<void> dispose();
 }

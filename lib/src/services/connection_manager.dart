@@ -1,13 +1,11 @@
 import 'dart:async';
 
-import '../models/models.dart';
-import '../exceptions/exceptions.dart';
+import 'package:thunder_thermal_print/src/ble/ble.dart';
+import 'package:thunder_thermal_print/src/bluetooth/bluetooth.dart';
+import 'package:thunder_thermal_print/src/network/network.dart';
+import 'package:thunder_thermal_print/src/usb/usb.dart';
+import 'package:thunder_thermal_print/thunder_thermal_print.dart';
 import '../services/thermal_print_platform_interface.dart';
-import '../streams/connection_stream.dart';
-import 'bluetooth/bluetooth_handler.dart';
-import 'ble/ble_handler.dart';
-import 'usb/usb_handler.dart';
-import 'network/network_handler.dart';
 
 class ConnectionManager {
   ConnectionManager._();

@@ -101,10 +101,19 @@ class _DeviceDiscoveryScreenState extends State<DeviceDiscoveryScreen> {
     });
 
     try {
-      final devices = await ThunderThermalPrint.scanAll();
+      final results = await Future.wait([
+        ThunderThermalPrint.scanBluetooth(timeout: const Duration(seconds: 10)),
+        ThunderThermalPrint.scanBle(timeout: const Duration(seconds: 10)),
+        ThunderThermalPrint.scanUsb(),
+        ThunderThermalPrint.scanNetwork(),
+      ]);
+      final allDevices = <PrinterDevice>[];
+      for (final devices in results) {
+        allDevices.addAll(devices);
+      }
       setState(() {
-        _devices.addAll(devices);
-        _scanStatus = 'Found ${devices.length} devices total';
+        _devices.addAll(allDevices);
+        _scanStatus = 'Found ${allDevices.length} devices total';
       });
     } catch (e) {
       setState(() => _scanStatus = 'Error: $e');

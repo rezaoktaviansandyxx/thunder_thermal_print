@@ -8,8 +8,6 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:web/web.dart' as web;
 
 import 'package:thunder_thermal_print/thunder_thermal_print.dart';
-import 'package:thunder_thermal_print/src/exceptions/exceptions.dart';
-import 'package:thunder_thermal_print/src/models/models.dart';
 import 'package:thunder_thermal_print/src/services/thermal_print_platform_interface.dart';
 
 // ---------------------------------------------------------------------------
@@ -548,10 +546,58 @@ class ThunderThermalPrintWeb extends ThunderThermalPrintPlatform {
   // Printer Status
   // -------------------------------------------------------------------------
   @override
-  Future<PrinterStatus> getStatus() async {
-    return PrinterStatus(
-      online: await isConnected(),
-    );
+  Future<Map<String, dynamic>> getStatus() async {
+    return {
+      'online': await isConnected(),
+      'paperOut': false,
+      'paperNearEnd': false,
+      'coverOpen': false,
+      'drawerOpen': false,
+      'batteryLow': false,
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> getPrinterCapabilities() async {
+    return {};
+  }
+
+  @override
+  Future<int?> getPrintedBytesCount() async {
+    return null;
+  }
+
+  // -------------------------------------------------------------------------
+  // Background Service (not supported on web)
+  // -------------------------------------------------------------------------
+  @override
+  Future<void> startBackgroundMonitoring() async {}
+
+  @override
+  Future<void> stopBackgroundMonitoring() async {}
+
+  @override
+  Future<bool> isBackgroundMonitoringActive() async {
+    return false;
+  }
+
+  // -------------------------------------------------------------------------
+  // Printer Profiles & Persistence (not supported on web)
+  // -------------------------------------------------------------------------
+  @override
+  Future<void> savePrinterProfile(PrinterDevice device) async {}
+
+  @override
+  Future<PrinterDevice?> loadPrinterProfile(String id) async {
+    return null;
+  }
+
+  @override
+  Future<void> setDefaultPrinter(PrinterDevice device) async {}
+
+  @override
+  Future<List<PrinterDevice>> getPairedDevices() async {
+    return [];
   }
 
   // -------------------------------------------------------------------------
@@ -748,5 +794,10 @@ class ThunderThermalPrintWeb extends ThunderThermalPrintPlatform {
         code: 'WRITE_FAILED',
       );
     }
+  }
+
+  @override
+  Future<void> dispose() async {
+    // Web platform cleanup
   }
 }

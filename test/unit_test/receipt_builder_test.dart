@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thunder_thermal_print/src/receipt/receipt_builder.dart';
 import 'package:thunder_thermal_print/src/escpos/escpos_commands.dart';

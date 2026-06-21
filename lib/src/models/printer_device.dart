@@ -9,6 +9,9 @@ class PrinterDevice {
   /// Connection type of this device
   final PrinterConnectionType connectionType;
 
+  /// Port for network devices (e.g. 9100 for ESC/POS)
+  final int? port;
+
   /// Signal strength (RSSI) for wireless devices, null for USB
   final int? rssi;
 
@@ -28,6 +31,7 @@ class PrinterDevice {
     required this.address,
     required this.name,
     required this.connectionType,
+    this.port,
     this.rssi,
     this.vendorId,
     this.productId,
@@ -42,6 +46,7 @@ class PrinterDevice {
       connectionType: PrinterConnectionType.fromString(
         map['connectionType'] as String? ?? 'unknown',
       ),
+      port: map['port'] as int?,
       rssi: map['rssi'] as int?,
       vendorId: map['vendorId'] as int?,
       productId: map['productId'] as int?,
@@ -55,11 +60,13 @@ class PrinterDevice {
     String? address,
     String? name,
     PrinterConnectionType? connectionType,
+    int? port,
     int? rssi,
     int? vendorId,
     int? productId,
     bool? isConnected,
     Map<String, dynamic>? metadata,
+    bool clearPort = false,
     bool clearRssi = false,
     bool clearVendorId = false,
     bool clearProductId = false,
@@ -68,6 +75,7 @@ class PrinterDevice {
       address: address ?? this.address,
       name: name ?? this.name,
       connectionType: connectionType ?? this.connectionType,
+      port: clearPort ? null : (port ?? this.port),
       rssi: clearRssi ? null : (rssi ?? this.rssi),
       vendorId: clearVendorId ? null : (vendorId ?? this.vendorId),
       productId: clearProductId ? null : (productId ?? this.productId),
@@ -81,6 +89,7 @@ class PrinterDevice {
       'address': address,
       'name': name,
       'connectionType': connectionType.name,
+      'port': port,
       'rssi': rssi,
       'vendorId': vendorId,
       'productId': productId,
@@ -97,6 +106,7 @@ class PrinterDevice {
           address == other.address &&
           name == other.name &&
           connectionType == other.connectionType &&
+          port == other.port &&
           rssi == other.rssi &&
           vendorId == other.vendorId &&
           productId == other.productId &&
@@ -107,6 +117,7 @@ class PrinterDevice {
         address,
         name,
         connectionType,
+        port,
         rssi,
         vendorId,
         productId,

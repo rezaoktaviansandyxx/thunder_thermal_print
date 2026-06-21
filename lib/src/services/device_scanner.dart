@@ -1,5 +1,4 @@
 import '../models/models.dart';
-import '../exceptions/exceptions.dart';
 import '../bluetooth/bluetooth_handler.dart';
 import '../ble/ble_handler.dart';
 import '../usb/usb_handler.dart';

@@ -465,8 +465,22 @@ class ThunderThermalPrint {
   ///   print('Cannot print: ${status.issues.join(", ")}');
   /// }
   /// ```
-  static Future<PrinterStatus> getStatus() {
-    return ThunderThermalPrintPlatform.instance.getStatus();
+  static Future<PrinterStatus> getStatus() async {
+    final map = await ThunderThermalPrintPlatform.instance.getStatus();
+    return PrinterStatus(
+      online: map['online'] as bool? ?? false,
+      paperOut: map['paperOut'] as bool? ?? false,
+      paperNearEnd: map['paperNearEnd'] as bool? ?? false,
+      coverOpen: map['coverOpen'] as bool? ?? false,
+      drawerOpen: map['drawerOpen'] as bool? ?? false,
+      batteryLow: map['batteryLow'] as bool? ?? false,
+      batteryLevel: map['batteryLevel'] as int?,
+      errorCode: map['errorCode'] as int?,
+      errorMessage: map['errorMessage'] as String?,
+      timestamp: map['timestamp'] != null
+          ? DateTime.parse(map['timestamp'] as String)
+          : null,
+    );
   }
 
   // ---------------------------------------------------------------------------

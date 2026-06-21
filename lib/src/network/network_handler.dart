@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import '../models/models.dart';
-import '../exceptions/exceptions.dart';
 import '../services/thermal_print_platform_interface.dart';
 
 class NetworkHandler {

@@ -4,7 +4,7 @@ import 'package:thunder_thermal_print_example/main.dart';
 
 void main() {
   testWidgets('App displays correctly', (WidgetTester tester) async {
-    await tester.pumpWidget(const ThermalPrintDemoApp());
+    await tester.pumpWidget(const ThunderThermalPrintExampleApp());
 
     expect(find.text('🖨️ Thermal Print Demo'), findsOneWidget);
   });

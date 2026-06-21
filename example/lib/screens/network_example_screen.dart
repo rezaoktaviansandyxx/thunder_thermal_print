@@ -138,7 +138,7 @@ class _NetworkExampleScreenState extends State<NetworkExampleScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _isConnected ? _disconnect : null,
-                    icon: const Icon(Icons.disconnect),
+                    icon: const Icon(Icons.link_off),
                     label: const Text('Disconnect'),
                   ),
                 ),
