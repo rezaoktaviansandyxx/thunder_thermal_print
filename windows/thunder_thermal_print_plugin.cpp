@@ -1,12 +1,15 @@
+#define WIN32_LEAN_AND_MEAN
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define _CRT_NONSTDC_NO_DEPRECATE
+#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
 #include "thunder_thermal_print_plugin.h"
 
 #include <flutter/method_channel.h>
 #include <flutter/standard_method_codec.h>
 #include <flutter/plugin_registrar_windows.h>
-
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <setupapi.h>
 #include <devpkey.h>
 #include <string>
@@ -42,6 +45,18 @@ inline void ReplySuccess(flutter::MethodResult<flutter::EncodableValue>& result,
 // ---------------------------------------------------------------------------
 // Helper: string conversion
 // ---------------------------------------------------------------------------
+// Case-insensitive wide string find
+const wchar_t* Wcsistr(const wchar_t* str, const wchar_t* substr) {
+    if (!str || !substr) return nullptr;
+    size_t len = wcslen(substr);
+    if (len == 0) return str;
+    while (*str) {
+        if (_wcsnicmp(str, substr, len) == 0) return str;
+        ++str;
+    }
+    return nullptr;
+}
+
 std::string WideToUtf8(const std::wstring& wide) {
     if (wide.empty()) return "";
     int size = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), (int)wide.size(),
@@ -223,10 +238,10 @@ flutter::EncodableList ScanNetwork(const std::string& subnet) {
 
                 struct sockaddr_in addr;
                 addr.sin_family = AF_INET;
-                addr.sin_port = htons(port);
+                addr.sin_port = htons(static_cast<u_short>(port));
                 addr.sin_addr.s_addr = inet_addr(host.c_str());
 
-                int rc = connect(sock, (struct sockaddr*)&addr, sizeof(addr));
+                connect(sock, (struct sockaddr*)&addr, sizeof(addr));
 
                 fd_set writeSet;
                 FD_ZERO(&writeSet);
@@ -294,7 +309,7 @@ bool ConnectNetwork(const std::string& host, int port, std::string& errorMsg) {
 
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
+    addr.sin_port = htons(static_cast<u_short>(port));
     addr.sin_addr.s_addr = inet_addr(host.c_str());
 
     // Non-blocking connect with timeout
@@ -379,8 +394,8 @@ bool ConnectUsb(int vendorId, int productId, std::string& errorMsg) {
         }
         std::wstring hw(hwid);
         // Case-insensitive search
-        if (_wcsistr(hw.c_str(), vidStr.c_str()) != nullptr &&
-            _wcsistr(hw.c_str(), pidStr.c_str()) != nullptr) {
+        if (Wcsistr(hw.c_str(), vidStr.c_str()) != nullptr &&
+            Wcsistr(hw.c_str(), pidStr.c_str()) != nullptr) {
             // Get device interface path
             SP_DEVICE_INTERFACE_DATA ifaceData;
             ifaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
